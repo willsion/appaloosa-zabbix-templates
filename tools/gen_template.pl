@@ -153,6 +153,7 @@ $xmlhash->{zabbix_export}->{hosts}->{host}            = [
     items => { item => [
                         map {
                           my $out = $$tmpl{items}{$_};
+                          die('Invalid storage type '. $$out{store}) if( not exists( $item_store_types{ $$out{store} } ) );
                           _d('item:', $_);
                           _d('item type:', or_default($$out{type}, $def_item_type));
                           {
