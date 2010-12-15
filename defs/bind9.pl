@@ -193,6 +193,11 @@ my $setting_interval = 3600;
         store       => 'As_is',
         interval    => $setting_interval
       },
+      "bind9[records]" => {
+        description => 'Total zone records being served',
+        store       => 'As_is',
+        interval    => $setting_interval
+      },
       "proc.num[named]" => {
         description => 'Named processes',
         store       => 'As_is',
