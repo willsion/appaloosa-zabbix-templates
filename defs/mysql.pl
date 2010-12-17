@@ -15,8 +15,6 @@
 # this program; if not, write to the Free Software Foundation, Inc., 59 Temple
 # Place, Suite 330, Boston, MA  02111-1307  USA.
 #
-my $perf_interval = 120;
-my $setting_interval = 3600;
 
 {
 
@@ -25,8 +23,8 @@ my $setting_interval = 3600;
     name         => 'Template_MySQL',
     version      => '0.0.5',
     interval     => $perf_interval,
-    history      => 90,
-    trends       => 365,
+    history      => $history,
+    trends       => $trends,
     item_value   => 'Float',
     item_type    => 'Passive_agent',
     applications => [ 'MySQL' ],

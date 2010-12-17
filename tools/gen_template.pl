@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #
 # This tool generates a zabbix XML template import from a meta-template.
 #
@@ -22,6 +22,8 @@ use warnings FATAL => 'all';
 use XML::Simple;
 use DateTime;
 use Data::Dumper;
+use Getopt::Long qw(:config no_ignore_case pass_through);
+use Pod::Usage;
 
 my %item_types = (
   Passive_agent => 0,
@@ -99,14 +101,30 @@ my %trigger_type = (
   Change => 0,
   Problem => 1,
 );
-
-my $input = shift @ARGV;
-my $output = shift @ARGV;
-
+my $help = 0;
 my $tmpl = {};
 my $xmlhash = {};
 
 my $xs = new XML::Simple(KeepRoot => 1, KeyAttr => {  });
+
+my $setting_interval = 3600;
+my $perf_interval    = 120;
+
+my $history = 60;
+my $trends  = 365;
+
+GetOptions(
+  'help|h' => \$help,
+  'setting-interval=i' => \$setting_interval,
+  'perf-interval=i' => \$perf_interval,
+  'history=i' => \$history,
+  'trends=i' => \$trends,
+);
+
+pod2usage(0) if($help);
+
+my $input = shift @ARGV;
+my $output = shift @ARGV;
 
 die('need an input template') unless($input);
 die('need an output path') unless($output);
@@ -266,3 +284,38 @@ sub _d {
         @_;
    print STDERR "# $package:$line ", join(' ', @_), "\n";
 }
+
+__END__
+
+=head1 SYNOPSIS
+
+Usage: gen_template.pl [options] TEMPLATE OUTPUT
+
+Arguments:
+
+TEMPLATE - Path to the meta-template. Usually found under "defs/".
+OUTPUT   - Where to place the generated XML template.
+
+Options:
+
+  --help,-h  This help.
+
+  --setting-interval     How often, in seconds, setting like items should be stored.
+                         Items which do not change often use this value. 
+                         Example: mysql.setting.pool_size.
+                         Default: 3600.
+
+  --perf-interval        How often, in seconds, performance counter items should be stored.
+                         Items which change frequently use this.
+                         Example: memcached[get_hits].
+                         Default: 120.
+
+  --history              How many days of history to keep. Default: 90.
+  --trends               How many days of trends to keep. Default: 365.
+
+Individual templates may also handle additional options.
+For example, the BIND9 template handles the option --domain to allow you
+to create templates for particular zones you host.
+Refer to the top portion of a template to see what option it has,
+or consult the wiki documentation for the template at:
+http:://appaloosa-zabbix-templates.googlecode.com/

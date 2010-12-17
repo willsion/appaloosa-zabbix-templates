@@ -15,16 +15,19 @@
 # this program; if not, write to the Free Software Foundation, Inc., 59 Temple
 # Place, Suite 330, Boston, MA  02111-1307  USA.
 #
+
+# Template options.
+# Override defaults by adding options to the gen_template.pl commandline:
+# Example: tools/gen_template.pl defs/memcached.pl memcached_9000.xml --memcached-port 9000
 my $port = 11211;
-my $perf_interval = 120;
-my $setting_interval = 3600;
+GetOptions('memcached-port=i' => \$port);
 
 {
   name => "Template_Memcached_$port",
-  version => '0.0.1',
+  version => '0.0.2',
   interval => $perf_interval,
-  history      => 90,
-  trends       => 365,
+  history      => $history,
+  trends       => $trends,
   item_value   => 'Float',
   item_type    => 'Passive_agent',
   applications => [ 'Memcached' ],

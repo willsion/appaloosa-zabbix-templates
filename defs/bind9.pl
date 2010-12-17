@@ -16,15 +16,18 @@
 # Place, Suite 330, Boston, MA  02111-1307  USA.
 #
 
+# Template options.
+# Override defaults by adding options to the gen_template.pl commandline:
+# Example: tools/gen_template.pl defs/bind9.pl bind9_example.com.xml --domain example.com
 my $domain = 'global';
-my $perf_interval = 120;
-my $setting_interval = 3600;
+GetOptions('domain=s' => \$domain);
+
 {
   name => "Template_BIND9_$domain",
-  version => '0.0.1',
+  version => '0.0.2',
   interval => $perf_interval,
-  history      => 90,
-  trends       => 365,
+  history      => $history,
+  trends       => $trends,
   item_value   => 'Float',
   item_type    => 'Passive_agent',
   applications => [ 'BIND9' ],
