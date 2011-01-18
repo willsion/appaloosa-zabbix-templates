@@ -73,6 +73,16 @@ GetOptions('domain=s' => \$domain);
       ],
       name => "BIND9 $domain Queries",
     },
+    {
+      items => [
+        {
+          color    => '028CCC',
+          item     => "bind9[queries,$domain]",
+          drawtype => 'Filled',
+        },
+      ],
+      name => "BIND9 $domain QPS",
+    },
     ( $domain eq 'global' ? (
       {
         items => [
@@ -132,6 +142,11 @@ GetOptions('domain=s' => \$domain);
     },
     "bind9[nxdomain,$domain]" => {
       description => "NX Domain queries",
+      store       => "Delta_simple",
+      interval    => $perf_interval,
+      },
+    "bind9[queries,$domain]" => {
+      description => "Queries per second",
       store       => "Delta_simple",
       interval    => $perf_interval,
       },

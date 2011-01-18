@@ -129,7 +129,7 @@ calculated:
 These statistics are measured outside BIND, or by
 doing a more complicated operation.
 
-
+  - 'queries' sum of success,referral,nxrrset,nxdomain,recursion,failure.
   - 'latency' performs a query and measures response time.
   - 'pid'   returns the pid of the named process
   - 'VmPeak' peak memory usage of named.
@@ -181,6 +181,12 @@ $$stats{'global'}{'zones'} = scalar( keys %$stats );
 # so, it's only computed as necessary.
 if( $stat eq 'records' ) {
   $$stats{'global'}{'records'} = nrecords();
+}
+
+# compute the total queries for the 'queries' counter stat.
+$$stats{$zone}{'queries'} = 0;
+for(qw(success referral nxrrset nxdomain recursion failure)) {
+  $$stats{$zone}{'queries'} += $$stats{$zone}{$_};
 }
 
 if( -f $pid_file ) {
