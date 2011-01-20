@@ -147,7 +147,7 @@ GetOptions('domain=s' => \$domain);
       },
     "bind9[queries,$domain]" => {
       description => "Queries per second",
-      store       => "Delta_simple",
+      store       => "Delta_speed",
       interval    => $perf_interval,
       },
     ( $domain eq 'global' ? (
