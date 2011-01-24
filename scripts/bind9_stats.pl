@@ -17,8 +17,9 @@
 use strict;
 use warnings FATAL => 'all';
 use Net::DNS;
-use Time::HiRes qw(gettimeofday tv_interval);
+use Time::HiRes qw(gettimeofday tv_interval usleep);
 use constant DEBUG => $ENV{DEBUG} || 0;
+use Data::Dumper;
 
 # Path set to empty so that this script can be run SUID root.
 $ENV{PATH} = "";
@@ -61,9 +62,10 @@ sub rndc {
     DEBUG && print(STDERR "$r\n");
     return {};
   }
+  while(! -f $stats_file) { usleep(250000); DEBUG && print(STDERR "waiting for $stats_file\n"); }
   {
     local $/;
-    open BIND_STATS, "<$stats_file";
+    open BIND_STATS, "<$stats_file" or die("while opening $stats_file: $!\n");
     $o = <BIND_STATS>;
     close BIND_STATS;
   }
@@ -167,8 +169,10 @@ $zone ||= 'global';
 # if no stats returned from RNDC, then clearly there's an error.
 if( scalar( keys %$stats ) == 0 ) {
   print("-1\n");
-  exit(0);
+  exit(1);
 }
+
+DEBUG && print(STDERR Dumper($stats), "\n");
 
 my $res = Net::DNS::Resolver->new( nameservers => [$ns_ip] );
 my $t0 = [gettimeofday];
@@ -218,3 +222,4 @@ if( -f $pid_file ) {
 print( (defined $$stats{$zone}{$stat}
           ? $$stats{$zone}{$stat}
             : $$stats{'global'}{$stat} || -1), "\n");
+exit(0);
