@@ -30,7 +30,7 @@ GetOptions('domain=s' => \$domain);
   trends       => $trends,
   item_value   => 'Float',
   item_type    => 'Passive_agent',
-  applications => [ 'BIND9' ],
+  applications => [ ($domain eq 'global' ? 'BIND9' : "BIND9 $domain") ],
   groups              => [],       # Implicitly added to the 'Templates' group
   graph_width         => 800,
   graph_height        => 150,
