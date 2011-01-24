@@ -53,6 +53,7 @@ my $ns_query = 'localhost.localdomain';
 ##############################################################################
 
 sub rndc {
+  my $i = 4; # wait one full second for the stats file.
   my $stats = {};
   my $o;
   unlink($stats_file);
@@ -62,7 +63,12 @@ sub rndc {
     DEBUG && print(STDERR "$r\n");
     return {};
   }
-  while(! -f $stats_file) { usleep(250000); DEBUG && print(STDERR "waiting for $stats_file\n"); }
+  while($i && ! -f $stats_file) {
+    $i--;
+    usleep(250000);
+    DEBUG && print(STDERR "waiting for $stats_file\n");
+  }
+  die("$stats_file never showed up. Is the script configured correctly?\n") if($i == 0);
   {
     local $/;
     open BIND_STATS, "<$stats_file" or die("while opening $stats_file: $!\n");
@@ -174,6 +180,14 @@ if( scalar( keys %$stats ) == 0 ) {
 
 DEBUG && print(STDERR Dumper($stats), "\n");
 
+if(not defined $$stats{$zone}) {
+  print(STDERR "The stats file did not contain data for $zone.\n",
+        "You may have made a typo, or there may be a misconfiguration ",
+        "in named.conf.\n",
+        "See http://code.google.com/p/appaloosa-zabbix-templates/wiki/Bind9Templates#Troubleshooting for help.\n");
+  exit(1);
+}
+
 my $res = Net::DNS::Resolver->new( nameservers => [$ns_ip] );
 my $t0 = [gettimeofday];
 my $pckt = $res->query($ns_query);
@@ -187,6 +201,7 @@ if( $stat eq 'records' ) {
   $$stats{'global'}{'records'} = nrecords();
 }
 
+DEBUG && print(STDERR "counting total queries for $zone..\n");
 # compute the total queries for the 'queries' counter stat.
 $$stats{$zone}{'queries'} = 0;
 for(qw(success referral nxrrset nxdomain recursion failure)) {
@@ -197,7 +212,7 @@ if( -f $pid_file ) {
   eval {
     {
       local $/;
-      open $fh, "<$pid_file" or die("unable to open pidfile");
+      open $fh, "<$pid_file" or die("unable to open $pid_file: $!");
       $pid = <$fh>;
       close($fh);
     }
@@ -217,9 +232,8 @@ if( -f $pid_file ) {
   close($fh);
 }
 
-# print a per-zone stat, if available falling back to
-# the global zone, or return -1 on error.
+# print the statistic, or -1 on error.
 print( (defined $$stats{$zone}{$stat}
           ? $$stats{$zone}{$stat}
-            : $$stats{'global'}{$stat} || -1), "\n");
-exit(0);
+            : -1), "\n");
+exit(defined $$stats{$zone}{$stat} ? 0 : 1);
