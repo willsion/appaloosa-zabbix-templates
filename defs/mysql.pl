@@ -2088,7 +2088,7 @@
         },
         {
             description => 'Slave is stopped on {HOSTNAME}',
-            expression  => '{Template_MySQL:mysql.slave_stopped.last(0)}=1',
+            expression  => '{Template_MySQL:mysql.slave_running.last(0)}=-1|{Template_MySQL:mysql.slave_stopped.last(0)}=-1',
             severity    => 'High',
             depends_on  => [ 'Process mysqld not running on {HOSTNAME}' ],
         },
